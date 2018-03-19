@@ -1,0 +1,6 @@
+   cd 01_intro_python/
+   conda info --envs
+   conda create --name XXXXXX python=2.7
+   conda activate intro_ipython
+   sudo pip install -r requirements.txt
+   jupyter notebook
