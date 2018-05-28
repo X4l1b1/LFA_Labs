@@ -27,7 +27,8 @@ class TwoPointsPDLV(LinguisticVariable):
     """
 
     def __init__(self, name, p, d):
-        super(TwoPointsPDLV, self).__init__(name, ling_values_dict={
+        assert p <= d, "points must be increasing values"
+        super(ThreePointsLV, self).__init__(name, ling_values_dict={
             "low": LinPWMF([p, 1], [d, 0]),
             "high": LinPWMF([p, 0], [d, 1])
         })
