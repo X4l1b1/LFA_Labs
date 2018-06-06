@@ -54,10 +54,9 @@ class FCM_SS_2:
     def getClass(self, dataset, labels, k, labels_names):
         count_class = np.zeros((k, len(labels_names)))
         newLabels = copy.copy(labels)
-
         for i in range(len(dataset)):
             if(dataset[i][-1] != 0):
-                count_class[labels[i]][int(dataset[i][-1] - 1)] += 1
+                count_class[int(labels[i])][int(dataset[i][-1] - 1)] += 1
 
         for c in range(len(count_class)):
             indexPredominantClass = np.argmax(count_class[c])
@@ -68,7 +67,7 @@ class FCM_SS_2:
 
             for i in range(len(labels)):
                 if labels[i] == c:
-                        newLabels[i] = cl
+                    newLabels[i] = cl
         return newLabels
 
     def getClusters(self, dataset, membership_mat):
@@ -166,11 +165,18 @@ class FCM_SS_2:
                 fhv_s = self.fhv(x = temp_data[:,:-1], v = centers, u = mb, m =2)
                 pc_s  = self.pc(temp_data[:,:-1], mb, centers, 2)
                 xb_s  = self.xb(x = temp_data[:,:-1], u = mb, v = centers, m = 2)
+                print('fhv_s', fhv_s)
+                print('pc_s', pc_s)
+                print('xb_s', xb_s)
+                if(pc_s > 0.75 and xb_s < 0.2 and fhv_s < 4.):
+                    print('coucou')
+                    print('fhv_s', fhv_s)
 
-                if(pc_s > 0.8 and xb_s < 0.2 and fhv_s < 20):#fhv_s > 0.1 or
                     for i in range(len(temp_data)):
                             result_labels[result_index] = temp_data[i]
                             res_labels.append(int(found_clusters + labels[i]))
+                            print('loop', res_labels)
+
                             result_index += 1
                     for i in range(len(centers)):
                         result_centers += [centers[i]]
@@ -182,8 +188,8 @@ class FCM_SS_2:
 
                     for i in range(len(cluster)):
                         result_labels[result_index] = cluster[i]
-                        res_labels.append(found_clusters)
-                        print(res_labels)
+                        res_labels.append(int(found_clusters))
+                        print('loop', res_labels)
                         result_index += 1
 
                     result_centers += [centers[int(c)]]
@@ -195,7 +201,7 @@ class FCM_SS_2:
                     c = 2
 
                 continue
-        print(res_labels)
+        print(labels_names)
         label =  self.getClass(result_labels, res_labels, len(result_centers), labels_names)
 
         print(label)

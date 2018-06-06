@@ -68,7 +68,7 @@ class FCM_SS_2:
 
             for i in range(len(labels)):
                 if labels[i] == c:
-                        newLabels[i] = cl
+                    newLabels[i] = cl
         return newLabels
 
     def getClusters(self, dataset, membership_mat):
@@ -144,7 +144,7 @@ class FCM_SS_2:
         c    = 2
         done = False
 
-        found_clusters = 0
+        found_clusters = 1.
         result_index   = 0
 
         while(not done and (found_clusters + c) < math.sqrt(len(dataset))):
@@ -167,7 +167,7 @@ class FCM_SS_2:
                 pc_s  = self.pc(temp_data[:,:-1], mb, centers, 2)
                 xb_s  = self.xb(x = temp_data[:,:-1], u = mb, v = centers, m = 2)
 
-                if(pc_s > 0.8 and xb_s < 0.2 and fhv_s < 20):#fhv_s > 0.1 or
+                if(pc_s > 0.7 and xb_s < 0.4 and fhv_s < 30):#fhv_s > 0.1 or
                     for i in range(len(temp_data)):
                             result_labels[result_index] = temp_data[i]
                             res_labels.append(int(found_clusters + labels[i]))
