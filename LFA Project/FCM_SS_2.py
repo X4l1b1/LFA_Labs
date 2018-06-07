@@ -46,9 +46,12 @@ class FCM_SS_2:
 
         for cluster in range(c):
             c_total = res[cluster][0] + res[cluster][1]
-        
-            res[cluster][0] /= c_total
-            res[cluster][1] /= c_total
+            if(c_total == 0):
+                 res[cluster][0] = 0
+                 res[cluster][1] = 0
+            else:
+                res[cluster][0] /= c_total
+                res[cluster][1] /= c_total
 
         return res
 
@@ -143,7 +146,7 @@ class FCM_SS_2:
         temp_data      = copy.deepcopy(dataset)
         print('self.fuzzy_param', self.fuzzy_param)
         print('self.membership_threshold', self.membership_threshold)
-        c    = 3
+        c    = len(labels_names)
         done = False
 
         found_clusters = 0
@@ -170,7 +173,7 @@ class FCM_SS_2:
                 xb_s  = self.xb(x = temp_data[:,:-1], u = mb, v = centers, m = self.fuzzy_param)
                 print('pc_s', pc_s)
                 print('xb_s', xb_s)
-                if(pc_s > 0.8 and xb_s < 0.25 and fhv_s < 20):#fhv_s > 0.1 or
+                if(pc_s > 0.9 and xb_s < 0.2 and fhv_s < 1):#fhv_s > 0.1 or
                     print('done')
                     for i in range(len(temp_data)):
                             result_labels[result_index] = temp_data[i]
@@ -184,21 +187,38 @@ class FCM_SS_2:
                     for c in cluster_ok :
                         cluster, indices = self.extractCluster(c, temp_data, labels)
 
-                    for i in range(len(cluster)):
-                        result_labels[result_index] = cluster[i]
-                        res_labels.append(found_clusters)
-                   #     print(res_labels)
-                        result_index += 1
+                        for i in range(len(cluster)):
+                            result_labels[result_index] = cluster[i]
+                            res_labels.append(found_clusters)
+                       #     print(res_labels)
+                            result_index += 1
 
-                    result_centers += [centers[int(c)]]
-                    found_clusters += 1
-                    temp_data = np.delete(temp_data, indices, 0)
+                        result_centers += [centers[int(c)]]
+                        found_clusters += 1
+                        temp_data = np.delete(temp_data, indices, 0)
 
                 c = c - len(cluster_ok) + 2
                 if (c < 2):
                     c = 2
 
                 continue
+        if(len(res_labels) < len(result_labels)):
+            print('labels', labels)
+            print('max_labels', max(labels))
+            for i in range(max(labels) + 1):
+                print(temp_data)
+                print('i', i)
+                cluster, indices = self.extractCluster(i, temp_data, labels)
+                for j in range(len(cluster)):
+                    result_labels[result_index] = cluster[j]
+                    res_labels.append(found_clusters)
+               #     print(res_labels)
+                    result_index += 1
+                print('centers', centers)
+                result_centers += [centers[i]]
+                found_clusters += 1
+                temp_data = np.delete(temp_data, indices, 0)
+                labels    = np.delete(labels, indices, 0)
     #    print(res_labels)
         print('center', result_centers)
         print(res_labels)
