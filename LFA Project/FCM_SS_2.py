@@ -46,6 +46,7 @@ class FCM_SS_2:
 
         for cluster in range(c):
             c_total = res[cluster][0] + res[cluster][1]
+        
             res[cluster][0] /= c_total
             res[cluster][1] /= c_total
 
@@ -141,12 +142,12 @@ class FCM_SS_2:
         result_centers = []
         temp_data      = copy.deepcopy(dataset)
 
-        c    = 2
+        c    = 3
         done = False
 
         found_clusters = 0
         result_index   = 0
-
+        print('cond', not done and (found_clusters + c) < math.sqrt(len(dataset)))
         while(not done and (found_clusters + c) < math.sqrt(len(dataset))):
         	#Compute fcm with the current parameters and clusters number
             mb, centers = self.fcm(temp_data[:,:-1], c, m=self.fuzzy_param)
@@ -163,11 +164,13 @@ class FCM_SS_2:
             if(len(cluster_ok) == 0):
                 c =c + 1
             else:
-                fhv_s = self.fhv(x = temp_data[:,:-1], v = centers, u = mb, m =2)
-                pc_s  = self.pc(temp_data[:,:-1], mb, centers, 2)
-                xb_s  = self.xb(x = temp_data[:,:-1], u = mb, v = centers, m = 2)
-
-                if(pc_s > 0.8 and xb_s < 0.2 and fhv_s < 20):#fhv_s > 0.1 or
+                fhv_s = self.fhv(x = temp_data[:,:-1], v = centers, u = mb, m =self.fuzzy_param)
+                pc_s  = self.pc(temp_data[:,:-1], mb, centers, self.fuzzy_param)
+                xb_s  = self.xb(x = temp_data[:,:-1], u = mb, v = centers, m = self.fuzzy_param)
+                print('pc_s', pc_s)
+                print('xb_s', xb_s)
+                if(pc_s > 0.8 and xb_s < 0.25 and fhv_s < 20):#fhv_s > 0.1 or
+                    print('done')
                     for i in range(len(temp_data)):
                             result_labels[result_index] = temp_data[i]
                             res_labels.append(int(found_clusters + labels[i]))
@@ -183,7 +186,7 @@ class FCM_SS_2:
                     for i in range(len(cluster)):
                         result_labels[result_index] = cluster[i]
                         res_labels.append(found_clusters)
-                        print(res_labels)
+                   #     print(res_labels)
                         result_index += 1
 
                     result_centers += [centers[int(c)]]
@@ -195,8 +198,13 @@ class FCM_SS_2:
                     c = 2
 
                 continue
+    #    print(res_labels)
+        print('center', result_centers)
         print(res_labels)
+        print(result_labels)
         label =  self.getClass(result_labels, res_labels, len(result_centers), labels_names)
-
         print(label)
-        return label, result_centers, mb
+     #   print(label)
+        print('ciao')
+        done = False
+        return result_labels, label, result_centers, mb
