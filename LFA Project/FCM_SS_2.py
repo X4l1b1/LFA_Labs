@@ -141,7 +141,8 @@ class FCM_SS_2:
         result_mb      = [[]]
         result_centers = []
         temp_data      = copy.deepcopy(dataset)
-
+        print('self.fuzzy_param', self.fuzzy_param)
+        print('self.membership_threshold', self.membership_threshold)
         c    = 3
         done = False
 
@@ -159,7 +160,7 @@ class FCM_SS_2:
             for i in range(c):
                 if(sup_verif[i][0] < (1-self.membership_threshold) or sup_verif[i][0] >= self.membership_threshold):
                     cluster_ok.append(i)
-
+            print('cluster_ok', cluster_ok)
             # if all clusters are good stop otherwise rerun with one more cluster
             if(len(cluster_ok) == 0):
                 c =c + 1
