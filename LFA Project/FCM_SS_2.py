@@ -41,8 +41,8 @@ class FCM_SS_2:
         res = np.zeros((c, numberOfLabels))
         for cluster in range(c) :
             for i in range(len(dataset)):
-                if(dataset[i][-1] != 0 and labels[i] == cluster):
-                    res[cluster][int(dataset[i][-1] - 1)] += 1
+                if(dataset[i][-2] != 0 and labels[i] == cluster):
+                    res[cluster][int(dataset[i][-2] - 1)] += 1
 
         for cluster in range(c):
             c_total = 0
@@ -60,8 +60,8 @@ class FCM_SS_2:
         count_class = np.zeros((k, len(labels_names)))
         newLabels = copy.copy(labels)
         for i in range(len(dataset)):
-            if(dataset[i][-1] != 0):
-                count_class[int(labels[i])][int(dataset[i][-1] - 1)] += 1
+            if(dataset[i][-2] != 0):
+                count_class[int(labels[i])][int(dataset[i][-2] - 1)] += 1
         for c in range(len(count_class)):
             indexPredominantClass = np.argmax(count_class[c])
             if np.max(count_class[c]) == 0:
@@ -155,8 +155,8 @@ class FCM_SS_2:
             if(len(temp_data) == 0):
                 done = True
                 break
-            mb, centers = self.fcm(temp_data[:,:-1], c, m=self.fuzzy_param)
-            labels = self.getClusters(temp_data[:,:-1], mb.T)
+            mb, centers = self.fcm(temp_data[:,:-2], c, m=self.fuzzy_param)
+            labels = self.getClusters(temp_data[:,:-2], mb.T)
 
             #Check the produced cluster
             sup_verif = self.checkKnownEntries(temp_data, labels, c, len(labels_names))
@@ -164,18 +164,14 @@ class FCM_SS_2:
             for i in range(c):
                 if(sup_verif[i][0] < (1-self.membership_threshold) or sup_verif[i][0] >= self.membership_threshold):
                     cluster_ok.append(i)
-            print('cluster_ok', cluster_ok)
             # if all clusters are good stop otherwise rerun with one more cluster
             if(len(cluster_ok) == 0):
                 c =c + 1
             else:
-                fhv_s = self.fhv(x = temp_data[:,:-1], v = centers, u = mb, m =self.fuzzy_param)
-                pc_s  = self.pc(temp_data[:,:-1], mb, centers, self.fuzzy_param)
-                xb_s  = self.xb(x = temp_data[:,:-1], u = mb, v = centers, m = self.fuzzy_param)
-                print('pc_s', pc_s)
-                print('xb_s', xb_s)
+                fhv_s = self.fhv(x = temp_data[:,:-2], v = centers, u = mb, m =self.fuzzy_param)
+                pc_s  = self.pc(temp_data[:,:-2], mb, centers, self.fuzzy_param)
+                xb_s  = self.xb(x = temp_data[:,:-2], u = mb, v = centers, m = self.fuzzy_param)
                 if(pc_s > 0.85 and xb_s < 0.2 and fhv_s < 1):#fhv_s > 0.1 or
-                    print('done')
                     for i in range(len(temp_data)):
                             result_labels[result_index] = temp_data[i]
                             res_labels.append(int(found_clusters + labels[i]))
@@ -219,12 +215,7 @@ class FCM_SS_2:
                 temp_data = np.delete(temp_data, indices, 0)
                 labels    = np.delete(labels, indices, 0)
 
-    #    print(res_labels)
-        print('center', result_centers)
-        print(res_labels)
-        print(result_labels)
         label =  self.getClass(result_labels, res_labels, len(result_centers), labels_names)
-        print(label)
      #   print(label)
         print('ciao')
         done = False
