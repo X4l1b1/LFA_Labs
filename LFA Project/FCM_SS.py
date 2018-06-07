@@ -45,9 +45,14 @@ class FCM_SS:
                     res[cluster][int(dataset[i][-1] - 1)] += 1
         
         for cluster in range(c):
-            c_total = res[cluster][0] + res[cluster][1]
-            res[cluster][0] /= c_total
-            res[cluster][1] /= c_total
+            c_total = 0
+            for j in range(numberOfLabels):
+                c_total += res[cluster][j]
+            for label in range(numberOfLabels):
+                if(c_total == 0):
+                    res[cluster][label] = 0
+                else:
+                    res[cluster][label] = res[cluster][label]/c_total
 
         return res
 
