@@ -94,39 +94,23 @@ class FCM_SS_2:
                 indices.append(i)
         return cluster, indices
 
-    def clusterize(self, dataset, labels_names):
+    def calculate_covariances(self,x, u, v, m):
+        c, n = np.array(u).shape
+        d = np.array(v).shape[1]
 
-      result_labels  = np.zeros((len(dataset), len(dataset[0])), float)
-      res_labels     = []
-      result_mb      = [[]]
-      result_centers = []
-      temp_data      = copy.deepcopy(dataset)
-      c    = 2
-      done = False
-      print('datasetl',len(dataset))
-      found_clusters = 0
-      result_index   = 0
+        um = np.array(u)**m
 
-      while(not done and (found_clusters + c) < math.sqrt(len(dataset))):
-            #Compute fcm with the current parameters and clusters number
-        mb, centers = self.fcm(temp_data[:,:-1], c, m=self.fuzzy_param)
-        labels = self.getClusters(temp_data[:,:-1], mb.T)
-        print('labels', len(res_labels))
+        covariances = np.zeros((c, d, d))
 
-        #Check the produced cluster
-        sup_verif = self.checkKnownEntries(temp_data, labels, c, len(labels_names))
-        all_zeros = 1
-        for val in sup_verif:
-            for v in val :
-                if(v != 0):
-                    all_zeros = 0
-        cluster_ok = []
         for i in range(c):
             xv = x - v[i]
             uxv = um[i, :, np.newaxis]*xv
             covariances[i] = np.einsum('ni,nj->ij', uxv, xv)/np.sum(um[i])
 
         return covariances
+
+    def pairwise_squared_distances(self, A, B):
+        return scipy.spatial.distance.cdist(A, B)**2
 
         # Partition Coefficient
     def pc(self, x, u, v, m):
