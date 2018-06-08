@@ -86,6 +86,8 @@ class FCM_SS_2:
     	self.membership_threshold = membership_threshold
 
     def extractCluster(self, c, dataset, labels):
+        if(len(dataset) == 0):
+            return [],[]
         cluster = np.empty((0, len(dataset[0])), float)
         indices = []
         for i in range(len(dataset)):
@@ -165,8 +167,14 @@ class FCM_SS_2:
             sup_verif = self.checkKnownEntries(temp_data, labels, c, len(labels_names))
             cluster_ok = []
             for i in range(c):
-                if(sup_verif[i][0] < (1-self.membership_threshold) or sup_verif[i][0] >= self.membership_threshold):
-                    cluster_ok.append(i)
+                ok = False
+                for j in range(len(sup_verif[i])):
+                    if(sup_verif[i][j] > self.membership_threshold):
+                        ok = True
+                    if(ok == True):
+                        cluster_ok.append(i)
+   
+      #                           if(sup_verif[i][0] < (1-self.membership_threshold) or sup_verif[i][0] >= self.membership_threshold):
             # if all clusters are good stop otherwise rerun with one more cluster
             if(len(cluster_ok) == 0):
                 c =c + 1
