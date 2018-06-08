@@ -1,0 +1,3 @@
+*.DS_STORE
+LFA\ Project/__pycache__/*
+LFA\ Project/.ipynb_checkpoints/*

@@ -41,18 +41,13 @@ class FCM_SS_2:
         res = np.zeros((c, numberOfLabels))
         for cluster in range(c) :
             for i in range(len(dataset)):
-                if(dataset[i][-2] != 0 and labels[i] == cluster):
-                    res[cluster][int(dataset[i][-2] - 1)] += 1
+                if(dataset[i][-1] != 0 and labels[i] == cluster):
+                    res[cluster][int(dataset[i][-1] - 1)] += 1
 
         for cluster in range(c):
-            c_total = 0
-            for j in range(numberOfLabels):
-                c_total = c_total + res[cluster][j]
-            for label in range(numberOfLabels):
-                if(c_total == 0):
-                    res[cluster][label] = 0
-                else:
-                    res[cluster][label] = res[cluster][label]/c_total
+            c_total = res[cluster][0] + res[cluster][1]
+            res[cluster][0] /= c_total
+            res[cluster][1] /= c_total
 
         return res
 
@@ -60,8 +55,9 @@ class FCM_SS_2:
         count_class = np.zeros((k, len(labels_names)))
         newLabels = copy.copy(labels)
         for i in range(len(dataset)):
-            if(dataset[i][-2] != 0):
-                count_class[int(labels[i])][int(dataset[i][-2] - 1)] += 1
+            if(dataset[i][-1] != 0):
+                count_class[int(labels[i])][int(dataset[i][-1] - 1)] += 1
+
         for c in range(len(count_class)):
             indexPredominantClass = np.argmax(count_class[c])
             if np.max(count_class[c]) == 0:
@@ -81,9 +77,6 @@ class FCM_SS_2:
             cluster_labels.append(idx)
         return cluster_labels
 
-    def setParams(self, fuzzy_param, membership_threshold):
-    	self.fuzzy_param = fuzzy_param
-    	self.membership_threshold = membership_threshold
 
     def extractCluster(self, c, dataset, labels):
         cluster = np.empty((0, len(dataset[0])), float)
@@ -94,33 +87,17 @@ class FCM_SS_2:
                 indices.append(i)
         return cluster, indices
 
-    def clusterize(self, dataset, labels_names):
+    def pairwise_squared_distances(self, A, B):
+        return scipy.spatial.distance.cdist(A, B)**2
 
-      result_labels  = np.zeros((len(dataset), len(dataset[0])), float)
-      res_labels     = []
-      result_mb      = [[]]
-      result_centers = []
-      temp_data      = copy.deepcopy(dataset)
-      c    = 2
-      done = False
-      print('datasetl',len(dataset))
-      found_clusters = 0
-      result_index   = 0
+    def calculate_covariances(self,x, u, v, m):
+        c, n = np.array(u).shape
+        d = np.array(v).shape[1]
 
-      while(not done and (found_clusters + c) < math.sqrt(len(dataset))):
-            #Compute fcm with the current parameters and clusters number
-        mb, centers = self.fcm(temp_data[:,:-1], c, m=self.fuzzy_param)
-        labels = self.getClusters(temp_data[:,:-1], mb.T)
-        print('labels', len(res_labels))
+        um = np.array(u)**m
 
-        #Check the produced cluster
-        sup_verif = self.checkKnownEntries(temp_data, labels, c, len(labels_names))
-        all_zeros = 1
-        for val in sup_verif:
-            for v in val :
-                if(v != 0):
-                    all_zeros = 0
-        cluster_ok = []
+        covariances = np.zeros((c, d, d))
+
         for i in range(c):
             xv = x - v[i]
             uxv = um[i, :, np.newaxis]*xv
@@ -163,7 +140,7 @@ class FCM_SS_2:
         result_centers = []
         temp_data      = copy.deepcopy(dataset)
 
-        c    = len(labels_names)
+        c    = 2
         done = False
 
         found_clusters = 0
@@ -171,11 +148,8 @@ class FCM_SS_2:
 
         while(not done and (found_clusters + c) < math.sqrt(len(dataset))):
         	#Compute fcm with the current parameters and clusters number
-            if(len(temp_data) == 0):
-                done = True
-                break
-            mb, centers = self.fcm(temp_data[:,:-2], c, m=self.fuzzy_param)
-            labels = self.getClusters(temp_data[:,:-2], mb.T)
+            mb, centers = self.fcm(temp_data[:,:-1], c, m=self.fuzzy_param)
+            labels = self.getClusters(temp_data[:,:-1], mb.T)
 
             #Check the produced cluster
             sup_verif = self.checkKnownEntries(temp_data, labels, c, len(labels_names))
@@ -183,59 +157,52 @@ class FCM_SS_2:
             for i in range(c):
                 if(sup_verif[i][0] < (1-self.membership_threshold) or sup_verif[i][0] >= self.membership_threshold):
                     cluster_ok.append(i)
+
             # if all clusters are good stop otherwise rerun with one more cluster
             if(len(cluster_ok) == 0):
                 c =c + 1
             else:
-                fhv_s = self.fhv(x = temp_data[:,:-2], v = centers, u = mb, m =self.fuzzy_param)
-                pc_s  = self.pc(temp_data[:,:-2], mb, centers, self.fuzzy_param)
-                xb_s  = self.xb(x = temp_data[:,:-2], u = mb, v = centers, m = self.fuzzy_param)
-                if(pc_s > 0.85 and xb_s < 0.2 and fhv_s < 1):#fhv_s > 0.1 or
+                fhv_s = self.fhv(x = temp_data[:,:-1], v = centers, u = mb, m =2)
+                pc_s  = self.pc(temp_data[:,:-1], mb, centers, 2)
+                xb_s  = self.xb(x = temp_data[:,:-1], u = mb, v = centers, m = 2)
+                print('fhv_s', fhv_s)
+                print('pc_s', pc_s)
+                print('xb_s', xb_s)
+                if(pc_s > 0.75 and xb_s < 0.2 and fhv_s < 4.):
+                    print('coucou')
+                    print('fhv_s', fhv_s)
+
                     for i in range(len(temp_data)):
                             result_labels[result_index] = temp_data[i]
                             res_labels.append(int(found_clusters + labels[i]))
+                            print('loop', res_labels)
+
                             result_index += 1
                     for i in range(len(centers)):
                         result_centers += [centers[i]]
-                    done = True
-
+                    done = 1
+                    break
                 else:
                     for c in cluster_ok :
                         cluster, indices = self.extractCluster(c, temp_data, labels)
 
-                        for i in range(len(cluster)):
-                            result_labels[result_index] = cluster[i]
-                            res_labels.append(found_clusters)
-                       #     print(res_labels)
-                            result_index += 1
+                    for i in range(len(cluster)):
+                        result_labels[result_index] = cluster[i]
+                        res_labels.append(int(found_clusters))
+                        print('loop', res_labels)
+                        result_index += 1
 
-                        result_centers += [centers[int(c)]]
-                        found_clusters += 1
-                        temp_data = np.delete(temp_data, indices, 0)
+                    result_centers += [centers[int(c)]]
+                    found_clusters += 1
+                    temp_data = np.delete(temp_data, indices, 0)
 
                 c = c - len(cluster_ok) + 2
                 if (c < 2):
                     c = 2
 
                 continue
-        if(len(res_labels) < len(result_labels)):
-            for i in range(max(labels) + 1):
-                if(len(temp_data) == 0):
-                    break
-                cluster, indices = self.extractCluster(i, temp_data, labels)
-                for j in range(len(cluster)):
-                    result_labels[result_index] = cluster[j]
-                    res_labels.append(found_clusters)
-                    result_index += 1
-
-                result_centers += [centers[i]]
-                found_clusters += 1
-
-                temp_data = np.delete(temp_data, indices, 0)
-                labels    = np.delete(labels, indices, 0)
-
+        print(labels_names)
         label =  self.getClass(result_labels, res_labels, len(result_centers), labels_names)
-     #   print(label)
-        print('ciao')
-        done = False
-        return result_labels, label, result_centers, mb
+
+        print(label)
+        return label, result_centers, mb
