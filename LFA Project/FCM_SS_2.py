@@ -182,7 +182,7 @@ class FCM_SS_2:
                 fhv_s = self.fhv(x = temp_data[:,:-2], v = centers, u = mb, m =self.fuzzy_param)
                 pc_s  = self.pc(temp_data[:,:-2], mb, centers, self.fuzzy_param)
                 xb_s  = self.xb(x = temp_data[:,:-2], u = mb, v = centers, m = self.fuzzy_param)
-                if(pc_s > 0.85 and xb_s < 0.2 and fhv_s < 1):#fhv_s > 0.1 or
+                if(pc_s > 0.82 and xb_s < 0.25 and fhv_s < 3):#fhv_s > 0.1 or
                     for i in range(len(temp_data)):
                             result_labels[result_index] = temp_data[i]
                             res_labels.append(int(found_clusters + labels[i]))
