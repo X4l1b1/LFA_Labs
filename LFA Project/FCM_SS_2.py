@@ -155,7 +155,7 @@ class FCM_SS_2:
         found_clusters = 0
         result_index   = 0
 
-        while(not done and (found_clusters + c) < math.sqrt(len(dataset))):
+        while(not done and (found_clusters + c) < math.sqrt(len(temp_data))):
         	#Compute fcm with the current parameters and clusters number
             if(len(temp_data) == 0):
                 done = True
@@ -208,8 +208,8 @@ class FCM_SS_2:
                 c = c - len(cluster_ok) + 2
                 if (c < 2):
                     c = 2
-
-                continue
+                    
+              
         if(len(res_labels) < len(result_labels)):
             for i in range(max(labels) + 1):
                 if(len(temp_data) == 0):
@@ -228,6 +228,5 @@ class FCM_SS_2:
 
         label =  self.getClass(result_labels, res_labels, len(result_centers), labels_names)
      #   print(label)
-        print('ciao')
         done = False
         return result_labels, label, result_centers, mb
